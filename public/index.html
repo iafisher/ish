@@ -6,10 +6,12 @@
     <link rel="stylesheet" href="ish.css">
   </head>
   <body>
-    <div id="container">
-      <div id="input-box"><span id="prompt">&gt; </span><input id="input"></div>
-    </div>
+    <div id="container"></div>
+    <!-- <div id="container"> -->
+    <!--   <div id="input-box"><span id="prompt">&gt; </span><input id="input"></div> -->
+    <!-- </div> -->
   </body>
 
   <script src="../dist/bundle.js"></script>
+  <script>Elm.Main.init({ node: document.getElementById("container") });</script>
 </html>

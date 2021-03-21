@@ -12,8 +12,10 @@ __pycache__
 
 # JavaScript
 node_modules
-dist
+/dist
 
 # Rust
 /target
 *.rs.bk
+
+/elm-stuff
