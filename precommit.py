@@ -28,7 +28,10 @@ def init(precommit):
     # precommit.check(checks.PythonTypes())
 
     # Lint JavaScript code with ESLint.
-    precommit.check(checks.JavaScriptLint())
+    precommit.check(
+        checks.JavaScriptLint(include=["*.ts"], exclude=["webpack.config.js"],)
+    )
+    precommit.check(checks.JavaScriptPrettierFormat(include=["*.ts"]))
 
     # Check Rust format with rustfmt.
     precommit.check(checks.RustFormat())

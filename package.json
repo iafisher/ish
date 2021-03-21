@@ -1,0 +1,29 @@
+{
+  "name": "ish",
+  "version": "0.0.1",
+  "description": "A new kind of shell",
+  "main": "ish.js",
+  "scripts": {
+    "build": "webpack",
+    "start": "webpack --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iafisher/ish.git"
+  },
+  "author": "Ian Fisher",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/iafisher/ish/issues"
+  },
+  "homepage": "https://github.com/iafisher/ish#readme",
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^4.18.0",
+    "eslint": "^7.22.0",
+    "eslint-config-prettier": "^8.1.0",
+    "ts-loader": "^8.0.18",
+    "typescript": "^4.2.3",
+    "webpack": "^5.27.1",
+    "webpack-cli": "^4.5.0"
+  }
+}
