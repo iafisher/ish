@@ -1,0 +1,44 @@
+* {
+  font-size: 16px;
+  font-family: monospace;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+#container {
+  width: 50%;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+#prompt {
+  width: 5%;
+}
+
+#input {
+  width: 95%;
+}
+
+pre {
+  margin: 0;
+}
+
+.prompt {
+  opacity: 50%;
+}
+
+.cartouche {
+  background-color: lightgray;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-radius: 15%;
+  border: 1px solid gray;
+}
+
+.error {
+  background-color: #ff4136;
+  color: white;
+}
