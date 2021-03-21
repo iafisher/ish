@@ -6,14 +6,21 @@ import Html.Attributes as A
 import Html.Events as E
 import Html.Keyed as Keyed
 import Json.Decode as Json
+import System exposing (Output(..), run, sampleSystem)
 
 
 main =
     Browser.sandbox { init = init, update = update, view = view }
 
 
+type alias HistoryEntry =
+    { prompt : String
+    , output : List Output
+    }
+
+
 type alias Model =
-    { history : List String
+    { history : List HistoryEntry
     , value : String
     }
 
@@ -35,7 +42,12 @@ update msg model =
     case msg of
         KeyDown key ->
             if key == 13 then
-                { model | history = model.history ++ [ model.value ], value = "" }
+                { model
+                    | history =
+                        model.history
+                            ++ [ { prompt = model.value, output = run sampleSystem model.value } ]
+                    , value = ""
+                }
 
             else
                 model
@@ -53,9 +65,29 @@ view model =
         )
 
 
-makeChild : Int -> String -> ( String, Html Msg )
-makeChild i s =
-    ( "child" ++ String.fromInt i, H.pre [] [ H.code [] [ H.text s ] ] )
+makeChild : Int -> HistoryEntry -> ( String, Html Msg )
+makeChild i e =
+    ( "child" ++ String.fromInt i
+    , H.pre []
+        [ H.code []
+            ([ H.span [ A.class "prompt" ] [ H.text ("> " ++ e.prompt ++ "\n") ] ]
+                ++ List.map outputToHtml e.output
+            )
+        ]
+    )
+
+
+outputToHtml : Output -> Html Msg
+outputToHtml output =
+    case output of
+        OutputRegular s ->
+            H.span [] [ H.text s ]
+
+        OutputSpecial s ->
+            H.span [ A.class "cartouche" ] [ H.text s ]
+
+        OutputError s ->
+            H.span [ A.class "error" ] [ H.text s ]
 
 
 onKeyDown : (Int -> Msg) -> Attribute Msg
