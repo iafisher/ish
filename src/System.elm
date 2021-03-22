@@ -168,9 +168,10 @@ binPwdUnwrapped system words =
 
     else
         [ OutputSpecial
-            (String.join
-                "/"
-                (List.map (\f -> f.name) (getParentEntries system system.workingDirectory))
+            ("/"
+                ++ String.join
+                    "/"
+                    (List.map (\f -> f.name) (getParentEntries system system.workingDirectory))
             )
         ]
 
@@ -238,7 +239,7 @@ getParentEntries system file =
                     [ file ]
 
         Nothing ->
-            [ file ]
+            []
 
 
 type alias Binary =
