@@ -1,4 +1,4 @@
-module System exposing (Output(..), System, run, sampleSystem)
+module System exposing (File, FileInfo(..), Output(..), System, getFile, getFileByName, run, sampleSystem)
 
 import Dict exposing (Dict)
 

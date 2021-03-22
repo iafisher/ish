@@ -6,7 +6,7 @@ import Html.Attributes as A
 import Html.Events as E
 import Html.Keyed as Keyed
 import Json.Decode as Json
-import System exposing (Output(..), System, run, sampleSystem)
+import System exposing (File, FileInfo(..), Output(..), System, getFile, getFileByName, run, sampleSystem)
 
 
 main =
@@ -56,11 +56,53 @@ update msg model =
                     , system = newSystem
                 }
 
+            else if key == 9 then
+                { model | value = model.value ++ autocomplete model.system model.value }
+
             else
                 model
 
         Input text ->
             { model | value = text }
+
+
+autocomplete : System -> String -> String
+autocomplete system value =
+    case value |> String.words |> List.filter (\s -> not (String.isEmpty s)) |> List.reverse |> List.head of
+        Just lastWord ->
+            case lastWord |> String.indices "/" |> List.reverse |> List.head of
+                Just lastSlashIndex ->
+                    case getFileByName system (String.slice 0 lastSlashIndex lastWord) of
+                        Just parent ->
+                            String.dropLeft
+                                (String.length lastWord - lastSlashIndex - 1)
+                                (getAutocompletion system parent (String.dropLeft (lastSlashIndex + 1) lastWord))
+
+                        Nothing ->
+                            ""
+
+                Nothing ->
+                    String.dropLeft (String.length lastWord) (getAutocompletion system system.workingDirectory lastWord)
+
+        Nothing ->
+            ""
+
+
+getAutocompletion : System -> File -> String -> String
+getAutocompletion system directory name =
+    case directory.info of
+        DirectoryInfo { children } ->
+            Maybe.withDefault
+                name
+                (children
+                    |> List.filterMap (\childId -> getFile system childId)
+                    |> List.filter (\f -> Debug.log (name ++ " - " ++ f.name) (String.startsWith name f.name))
+                    |> List.map (\f -> f.name)
+                    |> List.head
+                )
+
+        RealFileInfo _ ->
+            name
 
 
 view : Model -> Html Msg
@@ -99,4 +141,4 @@ outputToHtml output =
 
 onKeyDown : (Int -> Msg) -> Attribute Msg
 onKeyDown tagger =
-    E.on "keydown" (Json.map tagger E.keyCode)
+    E.preventDefaultOn "keydown" (Json.map (\x -> ( tagger x, x == 9 )) E.keyCode)
