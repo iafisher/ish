@@ -57,7 +57,7 @@ update msg model =
                 }
 
             else if key == 9 then
-                { model | value = model.value ++ autocomplete model.system model.value }
+                { model | value = model.value ++ Maybe.withDefault "" (autocomplete model.system model.value) }
 
             else
                 model
@@ -66,43 +66,43 @@ update msg model =
             { model | value = text }
 
 
-autocomplete : System -> String -> String
+autocomplete : System -> String -> Maybe String
 autocomplete system value =
     case value |> String.words |> List.filter (\s -> not (String.isEmpty s)) |> List.reverse |> List.head of
         Just lastWord ->
             case lastWord |> String.indices "/" |> List.reverse |> List.head of
                 Just lastSlashIndex ->
-                    case getFileByName system (String.slice 0 lastSlashIndex lastWord) of
-                        Just parent ->
-                            String.dropLeft
-                                (String.length lastWord - lastSlashIndex - 1)
-                                (getAutocompletion system parent (String.dropLeft (lastSlashIndex + 1) lastWord))
-
-                        Nothing ->
-                            ""
+                    getFileByName
+                        system
+                        (String.slice 0 lastSlashIndex lastWord)
+                        |> Maybe.andThen
+                            (\parent ->
+                                getAutocompletion
+                                    system
+                                    parent
+                                    (String.dropLeft (lastSlashIndex + 1) lastWord)
+                            )
 
                 Nothing ->
-                    String.dropLeft (String.length lastWord) (getAutocompletion system system.workingDirectory lastWord)
+                    getAutocompletion system system.workingDirectory lastWord
 
         Nothing ->
-            ""
+            Nothing
 
 
-getAutocompletion : System -> File -> String -> String
+getAutocompletion : System -> File -> String -> Maybe String
 getAutocompletion system directory name =
     case directory.info of
         DirectoryInfo { children } ->
-            Maybe.withDefault
-                name
-                (children
-                    |> List.filterMap (\childId -> getFile system childId)
-                    |> List.filter (\f -> Debug.log (name ++ " - " ++ f.name) (String.startsWith name f.name))
-                    |> List.map (\f -> f.name)
-                    |> List.head
-                )
+            children
+                |> List.filterMap (\childId -> getFile system childId)
+                |> List.filter (\f -> String.startsWith name f.name)
+                |> List.map (\f -> f.name)
+                |> List.head
+                |> Maybe.andThen (\fullName -> Just (String.dropLeft (String.length name) fullName))
 
         RealFileInfo _ ->
-            name
+            Nothing
 
 
 view : Model -> Html Msg
