@@ -85,6 +85,9 @@ getFileByName system name =
     if name == "." then
         Just system.workingDirectory
 
+    else if name == "/" then
+        getFile system 0
+
     else
         let
             path =
