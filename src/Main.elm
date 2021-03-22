@@ -6,7 +6,7 @@ import Html.Attributes as A
 import Html.Events as E
 import Html.Keyed as Keyed
 import Json.Decode as Json
-import System exposing (Output(..), run, sampleSystem)
+import System exposing (Output(..), System, run, sampleSystem)
 
 
 main =
@@ -20,14 +20,16 @@ type alias HistoryEntry =
 
 
 type alias Model =
-    { history : List HistoryEntry
+    { system : System
+    , history : List HistoryEntry
     , value : String
     }
 
 
 init : Model
 init =
-    { history = []
+    { system = sampleSystem
+    , history = []
     , value = ""
     }
 
@@ -42,11 +44,16 @@ update msg model =
     case msg of
         KeyDown key ->
             if key == 13 then
+                let
+                    ( newSystem, output ) =
+                        run model.system model.value
+                in
                 { model
                     | history =
                         model.history
-                            ++ [ { prompt = model.value, output = run sampleSystem model.value } ]
+                            ++ [ { prompt = model.value, output = output } ]
                     , value = ""
+                    , system = newSystem
                 }
 
             else

@@ -159,6 +159,10 @@ getFileByNameNonRecursive system parent name =
 
 binPwd : Binary
 binPwd system words =
+    ( system, binPwdUnwrapped system words )
+
+
+binPwdUnwrapped system words =
     if List.length words /= 0 then
         [ OutputError "pwd accepts no arguments." ]
 
@@ -171,8 +175,26 @@ binPwd system words =
         ]
 
 
+binCd : Binary
+binCd system words =
+    if List.length words /= 1 then
+        ( system, [ OutputError "cd requires exactly one argument." ] )
+
+    else
+        case words |> List.head |> Maybe.andThen (getFileByName system) of
+            Just target ->
+                ( { system | workingDirectory = target }, [] )
+
+            Nothing ->
+                ( system, [ OutputError "File not found." ] )
+
+
 binShow : Binary
 binShow system words =
+    ( system, binShowUnwrapped system words )
+
+
+binShowUnwrapped system words =
     if List.length words > 1 then
         [ OutputError "show requires zero or one argument." ]
 
@@ -220,15 +242,15 @@ getParentEntries system file =
 
 
 type alias Binary =
-    System -> List String -> List Output
+    System -> List String -> ( System, List Output )
 
 
 binaries : Dict String Binary
 binaries =
-    Dict.fromList [ ( "pwd", binPwd ), ( "show", binShow ) ]
+    Dict.fromList [ ( "pwd", binPwd ), ( "show", binShow ), ( "cd", binCd ) ]
 
 
-run : System -> String -> List Output
+run : System -> String -> ( System, List Output )
 run system commandLine =
     let
         words =
@@ -241,7 +263,7 @@ run system commandLine =
                     binary system (Maybe.withDefault [] (List.tail words))
 
                 Nothing ->
-                    [ OutputError ("Command not found: " ++ command) ]
+                    ( system, [ OutputError ("Command not found: " ++ command) ] )
 
         Nothing ->
-            []
+            ( system, [] )
