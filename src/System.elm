@@ -160,12 +160,8 @@ getFileByNameNonRecursive system parent name =
             Nothing
 
 
-binPwd : Binary
+binPwd : PureBinary
 binPwd system words =
-    ( system, binPwdUnwrapped system words )
-
-
-binPwdUnwrapped system words =
     if List.length words /= 0 then
         [ OutputError "pwd accepts no arguments." ]
 
@@ -193,12 +189,8 @@ binCd system words =
                 ( system, [ OutputError "File not found." ] )
 
 
-binShow : Binary
+binShow : PureBinary
 binShow system words =
-    ( system, binShowUnwrapped system words )
-
-
-binShowUnwrapped system words =
     if List.length words > 1 then
         [ OutputError "show requires zero or one argument." ]
 
@@ -245,13 +237,22 @@ getParentEntries system file =
             []
 
 
+type alias PureBinary =
+    System -> List String -> List Output
+
+
 type alias Binary =
     System -> List String -> ( System, List Output )
 
 
+wrapBinary : PureBinary -> Binary
+wrapBinary binary =
+    \system words -> ( system, binary system words )
+
+
 binaries : Dict String Binary
 binaries =
-    Dict.fromList [ ( "pwd", binPwd ), ( "show", binShow ), ( "cd", binCd ) ]
+    Dict.fromList [ ( "pwd", wrapBinary binPwd ), ( "show", wrapBinary binShow ), ( "cd", binCd ) ]
 
 
 run : System -> String -> ( System, List Output )
